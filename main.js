@@ -1,7 +1,11 @@
+// Install ODBC:
+// https://sourceforge.net/projects/firebird/files/firebird-ODBC-driver/2.0.5-Release/Firebird_ODBC_2.0.5.156_Win32.exe/download
+
 function init()
 {
-  xApiKey = getParameter('config.ini', 1);
-  endPoint = getParameter('config.ini', 2);
+  X_API_KEY = getParameter('config.ini', 1);
+  END_POINT = getParameter('config.ini', 2);
+  FRONTOL_DB_PATH = getParameter('config.ini', 3);
 }
 
 //KmInfo:
@@ -59,8 +63,8 @@ function getMarkStatus(KM)
     
     //DUBUG
     //print JSON string readable
-    //var jsonString = JSON.stringify(JSON.parse(result), null, 2);
-    //frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
+    var jsonString = JSON.stringify(JSON.parse(result), null, 2);
+    frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
     resultObj = JSON.parse(result);
     if(resultObj.code == 0){
         return resultObj.codes[0];
@@ -74,7 +78,7 @@ function sendRequest(path, method, body)
   try
     {
      //   frontol.actions.showMessage("DEBUG");
-        xmlhttp.open(method, endPoint + path, false);
+        xmlhttp.open(method, END_POINT + path, false);
 
     }
     catch (E)
@@ -85,7 +89,7 @@ function sendRequest(path, method, body)
     xmlhttp.setRequestHeader("Accept", "application/json");
     xmlhttp.setRequestHeader("Content-Type", "application/json");
     xmlhttp.setRequestHeader("Accept-Charset", "utf-8");
-    xmlhttp.setRequestHeader("x-api-key", xApiKey);
+    xmlhttp.setRequestHeader("x-api-key", X_API_KEY);
 
     try
     {
@@ -102,6 +106,31 @@ function sendRequest(path, method, body)
     //frontol.actions.showMessage(xmlhttp.responseText);
 
     return xmlhttp.responseText;
+}
+
+//getBeerTapMark: str -> str
+//  Возвращает КМ, привязанной к крану с кодом tapCode.
+//  Если отсутствует кран с указанным кодом, возвращает -1.
+function getBeerTapMark(tapCode)
+{
+    db = "DRIVER=Firebird/InterBase(r) driver; DBNAME=localhost:" + FRONTOL_DB_PATH + ";UID=sysdba;PWD=masterkey;CHARSET=WIN1251;";        
+    var conn = new ActiveXObject("ADODB.Connection");
+    conn.Provider = "MSDASQL.1";
+      
+    conn.Open(db);
+    var rs = new ActiveXObject("ADODB.Recordset");
+    rs.Open("SELECT label FROM beer_tap WHERE code = '" + tapCode + "'", conn);
+    if (rs.EOF)
+    {
+        return -1;
+    }
+    var result = rs.Fields.Item(0).Value;
+    rs.Close();
+    conn.Close();
+    
+    km = unescape(encodeURIComponent(result).replace(/%u/g, '\\u'));
+
+    return km;
 }
 
 // для работы с json

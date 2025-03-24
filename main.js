@@ -1,11 +1,54 @@
 // Install ODBC:
 // https://sourceforge.net/projects/firebird/files/firebird-ODBC-driver/2.0.5-Release/Firebird_ODBC_2.0.5.156_Win32.exe/download
 
+X_API_KEY = getParameter('config.ini', 1);
+END_POINT = getParameter('config.ini', 2);
+FRONTOL_DB_PATH = getParameter('config.ini', 3);
+
 function init()
 {
-  X_API_KEY = getParameter('config.ini', 1);
-  END_POINT = getParameter('config.ini', 2);
-  FRONTOL_DB_PATH = getParameter('config.ini', 3);
+  getBeerTapInfo();
+
+  //DEBUG
+  //km = getBeerTapMark(1);
+  //KmInfo = getMarkStatus(km);
+  //expireDate = getExpirationDate(KmInfo)
+  //frontol.actions.showMessage(expireDate);
+}
+
+function getBeerTapInfo()
+{
+    db = "DRIVER=Firebird/InterBase(r) driver; DBNAME=localhost:" + FRONTOL_DB_PATH + ";UID=sysdba;PWD=masterkey;CHARSET=WIN1251;";        
+    var conn = new ActiveXObject("ADODB.Connection");
+    conn.Provider = "MSDASQL.1";
+      
+    conn.Open(db);
+    var rs = new ActiveXObject("ADODB.Recordset");
+    var query = "\
+    SELECT BEER_TAP.CODE AS Tap_Number, BEER_TAP.NAME AS Tap_Name, \
+       BEER_TAP.LABEL AS Mark, SPRT.NAME AS Pos_Ware_Name FROM BEER_TAP \
+    LEFT JOIN SPRT ON BEER_TAP.WAREID = SPRT.ID \
+    WHERE BEER_TAP.LABEL IS NOT NULL \
+    ORDER BY BEER_TAP.CODE";
+    rs.Open(query, conn);
+    beerTapInfo = [];
+    while (!rs.EOF)
+    {
+        beerTapData = {};
+        for (var i = 0; i < rs.Fields.Count; i++)
+        {
+            var field = rs.Fields.Item(i);
+            beerTapData[field.Name] = field.Value;
+        }
+        beerTapInfo.push(beerTapData);
+        rs.MoveNext();
+    }
+    rs.Close();
+    conn.Close();
+    
+    //DEBUG
+    //jsonString = JSON.stringify(beerTapInfo, null, 2);
+    //frontol.actions.showMessage(jsonString); 
 }
 
 //KmInfo:
@@ -63,8 +106,9 @@ function getMarkStatus(KM)
     
     //DUBUG
     //print JSON string readable
-    var jsonString = JSON.stringify(JSON.parse(result), null, 2);
-    frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
+    //var jsonString = JSON.stringify(JSON.parse(result), null, 2);
+    //frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
+
     resultObj = JSON.parse(result);
     if(resultObj.code == 0){
         return resultObj.codes[0];

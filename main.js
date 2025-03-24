@@ -2,8 +2,38 @@ function init()
 {
   xApiKey = getParameter('config.ini', 1);
   endPoint = getParameter('config.ini', 2);
+}
 
-  getMarkStatus('<KM>');
+//KmInfo:
+// cis: str
+// valid: bool
+// printView: str
+// gtin: str
+// groupsId: [int]
+// verified: bool
+// found: bool
+// realizable: bool
+// utilised: bool
+// isBlocked: bool
+// expireDate: date
+// productionDate: date
+// isOwner: bool
+// errorCode: int
+// isTracking: bool
+// sold: bool
+// packageType: str
+// producerInn: str
+// grayZone: bool
+// soldunitCount: float
+// innerUnitCount: float
+function getExpirationDate(KmInfo)
+{
+    expireDateStr = KmInfo.expireDate;
+    expireDateStr = expireDateStr.substring(0, 10).replace(/-/g, '.');
+    expireDateParts = expireDateStr.split('.');
+    expireDateStr = expireDateParts[2] + '.' + expireDateParts[1] + "." + expireDateParts[0];
+
+    return expireDateStr;
 }
 
 function getParameter(filename, lineNumber)
@@ -29,11 +59,10 @@ function getMarkStatus(KM)
     
     //DUBUG
     //print JSON string readable
-    var jsonHR = JSON.stringify(JSON.parse(result), null, 2);
-    frontol.actions.showMessage(jsonHR.replace(/\n/g, '\r\n'));    
+    //var jsonString = JSON.stringify(JSON.parse(result), null, 2);
+    //frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
     resultObj = JSON.parse(result);
-
-    if(resultObj.code = 0){
+    if(resultObj.code == 0){
         return resultObj.codes[0];
     }
 }

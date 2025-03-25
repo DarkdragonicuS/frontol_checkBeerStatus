@@ -1,13 +1,17 @@
 // Install ODBC:
 // https://sourceforge.net/projects/firebird/files/firebird-ODBC-driver/2.0.5-Release/Firebird_ODBC_2.0.5.156_Win32.exe/download
 
-X_API_KEY = getParameter('config.ini', 1);
-END_POINT = getParameter('config.ini', 2);
-FRONTOL_DB_PATH = getParameter('config.ini', 3);
-
 function init()
 {
+    X_API_KEY = getParameter('config.ini', 1);
+    END_POINT = getParameter('config.ini', 2);
+    FRONTOL_DB_PATH = getParameter('config.ini', 3);
+}
 
+function updateTapInfo()
+{
+    beerTapInfo = getBeerTapInfo();
+    fillUserValues(beerTapInfo);
 }
 
 function showDebugData(value)
@@ -23,12 +27,16 @@ function fillUserValues(tapInfo)
         var tap = tapInfo[i];
 
         mark = tap.MARK;
-        tapNumber = tap.TAP_NUMBER
+        tapNumber = tap.TAP_NUMBER;
+        tapName = tap.TAP_NAME;
+        
         markInfo = getMarkStatus(mark);
-
         expireDate = getExpirationDate(markInfo);
-        userValueName = 'tap_' + tapNumber;
-        frontol.userValues.set(userValueName, dateToString(expireDate));
+
+        userValueNameTN = 'tapName_' + tapNumber;
+        userValueNameED = 'tapED_' + tapNumber;
+        frontol.userValues.set(userValueNameTN, tapName);
+        frontol.userValues.set(userValueNameED, dateToString(expireDate));
     }
 }
 

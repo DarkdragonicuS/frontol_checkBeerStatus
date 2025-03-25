@@ -7,7 +7,7 @@ FRONTOL_DB_PATH = getParameter('config.ini', 3);
 
 function init()
 {
-
+  
 }
 
 function showDebugData(value)
@@ -108,9 +108,29 @@ function getExpirationDate(KmInfo)
     expireDateParts = expireDateStr.split('.');
     expireDateStr = expireDateParts[2] + '.' + expireDateParts[1] + "." + expireDateParts[0];
 
-    return expireDateStr;
+    expireDate = new Date(parseDate(expireDateStr));
+    
+    return expireDate;
 }
 
+/**
+ * Converts a date string in the format 'dd.mm.yyyy' to a timestamp.
+ *
+ * @param {string} dateString - The date string in the format 'dd.mm.yyyy'.
+ * @returns {number} The timestamp representation of the given date.
+ */
+
+function parseDate(dateString) {
+    dateParts = dateString.split('.');
+    day = dateParts[0];
+    month = dateParts[1];
+    year = dateParts[2];
+    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    dateFormattedString = monthNames[month - 1] + ' ' + day + ', ' + year;
+    timeStamp = Date.parse(dateFormattedString);
+    
+    return timeStamp;
+}
 function getParameter(filename, lineNumber)
 {
   var fso = new ActiveXObject('Scripting.FileSystemObject');

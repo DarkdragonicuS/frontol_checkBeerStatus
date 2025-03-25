@@ -7,7 +7,7 @@ FRONTOL_DB_PATH = getParameter('config.ini', 3);
 
 function init()
 {
-  
+
 }
 
 function showDebugData(value)
@@ -28,7 +28,7 @@ function fillUserValues(tapInfo)
 
         expireDate = getExpirationDate(markInfo);
         userValueName = 'tap_' + tapNumber;
-        frontol.userValues.set(userValueName, expireDate);        
+        frontol.userValues.set(userValueName, dateToString(expireDate));
     }
 }
 
@@ -131,6 +131,11 @@ function parseDate(dateString) {
     
     return timeStamp;
 }
+
+function dateToString(date) {
+    return ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth() + 1)).slice(-2) + '.' + date.getFullYear();
+}
+
 function getParameter(filename, lineNumber)
 {
   var fso = new ActiveXObject('Scripting.FileSystemObject');

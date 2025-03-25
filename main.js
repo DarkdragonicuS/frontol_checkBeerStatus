@@ -23,6 +23,7 @@ function init()
     END_POINT = getParameter('config.ini', 2);
     FRONTOL_DB_PATH = getParameter('config.ini', 3);
 
+    frontol.userValues.clear();
     updateTapInfo();
 }
 

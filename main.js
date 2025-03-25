@@ -7,15 +7,41 @@ FRONTOL_DB_PATH = getParameter('config.ini', 3);
 
 function init()
 {
-  getBeerTapInfo();
 
-  //DEBUG
-  //km = getBeerTapMark(1);
-  //KmInfo = getMarkStatus(km);
-  //expireDate = getExpirationDate(KmInfo)
-  //frontol.actions.showMessage(expireDate);
 }
 
+function showDebugData(value)
+{
+  jsonString = JSON.stringify(value, null, 2);
+  frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));
+}
+
+function fillUserValues(tapInfo)
+{
+    for (var i = 0; i < tapInfo.length; i++)
+    {
+        var tap = tapInfo[i];
+
+        mark = tap.MARK;
+        tapNumber = tap.TAP_NUMBER
+        markInfo = getMarkStatus(mark);
+
+        expireDate = getExpirationDate(markInfo);
+        userValueName = 'tap_' + tapNumber;
+        frontol.userValues.set(userValueName, expireDate);        
+    }
+}
+
+/**
+ * @description
+ *   Формирует данные кранов
+ * @returns {array}
+ *   Возвращает массив с данными кранов:
+ *   TAP_NUMBER - Номер крана.
+ *   TAP_NAME - Наименование крана.
+ *   MARK - Привязанная в текущий момент к крану марка
+ *   POS_WARE_NAME - Наименование Frontol пива, установленного на кран
+ */
 function getBeerTapInfo()
 {
     db = "DRIVER=Firebird/InterBase(r) driver; DBNAME=localhost:" + FRONTOL_DB_PATH + ";UID=sysdba;PWD=masterkey;CHARSET=WIN1251;";        
@@ -46,6 +72,8 @@ function getBeerTapInfo()
     rs.Close();
     conn.Close();
     
+    return beerTapInfo;
+
     //DEBUG
     //jsonString = JSON.stringify(beerTapInfo, null, 2);
     //frontol.actions.showMessage(jsonString); 

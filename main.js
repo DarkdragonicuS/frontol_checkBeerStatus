@@ -6,11 +6,14 @@ function init()
     X_API_KEY = getParameter('config.ini', 1);
     END_POINT = getParameter('config.ini', 2);
     FRONTOL_DB_PATH = getParameter('config.ini', 3);
+
+    updateTapInfo();
 }
 
 function updateTapInfo()
 {
     beerTapInfo = getBeerTapInfo();
+    updateIsmTapInfo(beerTapInfo);
     fillUserValues(beerTapInfo);
 }
 
@@ -20,23 +23,67 @@ function showDebugData(value)
   frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));
 }
 
+function updateIsmTapInfo(tapInfo)
+{
+    marks = []
+    for (var i = 0; i < tapInfo.length; i++)
+        {
+            var tap = tapInfo[i];
+            mark = tap.MARK; 
+            marks.push(mark);
+        } 
+
+    marksInfo = getMarksStatus(marks);
+
+    for (var i = 0; i < tapInfo.length; i++)
+    {
+        mark = tapInfo[i].MARK;
+        markInfoIsm = findItemByKey(marksInfo, 'cis', mark);
+        tapInfo[i].IsmInfo = markInfoIsm;
+
+        expireDate = getExpirationDate(markInfoIsm);
+        volumeData = getVolumeData(markInfoIsm);
+        tapInfo[i].ExpirationDate = expireDate;
+        tapInfo[i].ExpirationDateStr = dateToString(expireDate);
+        tapInfo[i].volumeData = volumeData;
+        tapInfo[i].volumeFull = markInfoIsm.innerUnitCount / 1000;
+        tapInfo[i].volumeSold = markInfoIsm.soldUnitCount / 1000;
+        tapInfo[i].volumeRemained  = markInfoIsm.innerUnitCount / 1000 - markInfoIsm.soldUnitCount / 1000;
+    }
+}
+
+function findItemByKey(array, key, value)
+{
+    for (var i = 0; i < array.length; i++)
+    {
+        if (array[i][key] == value)
+        {
+            return array[i];
+        }
+    }
+    return null;
+}
+
 function fillUserValues(tapInfo)
 {
     for (var i = 0; i < tapInfo.length; i++)
     {
         var tap = tapInfo[i];
-
-        mark = tap.MARK;
+        mark = tap.MARK; 
+        
         tapNumber = tap.TAP_NUMBER;
         tapName = tap.TAP_NAME;
         
-        markInfo = getMarkStatus(mark);
-        expireDate = getExpirationDate(markInfo);
+        expireDate = tapInfo[i].ExpirationDateStr;
+        volumeData = tapInfo[i].volumeData;
 
         userValueNameTN = 'tapName_' + tapNumber;
         userValueNameED = 'tapED_' + tapNumber;
+        userValueNameVolume = 'tapVol_' + tapNumber;
+
         frontol.userValues.set(userValueNameTN, tapName);
-        frontol.userValues.set(userValueNameED, dateToString(expireDate));
+        frontol.userValues.set(userValueNameED, expireDate);
+        frontol.userValues.set(userValueNameVolume, volumeData);
     }
 }
 
@@ -107,7 +154,7 @@ function getBeerTapInfo()
 // packageType: str
 // producerInn: str
 // grayZone: bool
-// soldunitCount: float
+// soldUnitCount: float
 // innerUnitCount: float
 function getExpirationDate(KmInfo)
 {
@@ -119,6 +166,16 @@ function getExpirationDate(KmInfo)
     expireDate = new Date(parseDate(expireDateStr));
     
     return expireDate;
+}
+
+function getVolumeData(KmInfo)
+{
+    volumeFull = KmInfo.innerUnitCount / 1000;
+    volumeSold = KmInfo.soldUnitCount / 1000;
+    volumeRemained = volumeFull - volumeSold;
+    volumeData = volumeRemained.toFixed(1) + " / " + volumeFull.toFixed(1);
+
+    return volumeData;
 }
 
 /**
@@ -155,6 +212,8 @@ function getParameter(filename, lineNumber)
   file.Close();
   return value;
 }
+
+// Get Mark info for single KM
 function getMarkStatus(KM)
 {
     codes = [
@@ -176,6 +235,27 @@ function getMarkStatus(KM)
     }
 }
 
+// Get Mark info for multiple KMs
+function getMarksStatus(KmList)
+{
+    codes = KmList;
+
+    body = {
+         'codes': codes
+    }
+    result = sendRequest('/api/v4/true-api/codes/check', 'POST', body);  
+    
+    //DUBUG
+    //print JSON string readable
+    //var jsonString = JSON.stringify(JSON.parse(result), null, 2);
+    //frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
+
+    resultObj = JSON.parse(result);
+    if(resultObj.code == 0){
+        return resultObj.codes;
+    }
+}
+
 function sendRequest(path, method, body)
 {
   xmlhttp = new ActiveXObject("MsXml2.ServerXMLHTTP");
@@ -191,6 +271,7 @@ function sendRequest(path, method, body)
          frontol.actions.showError("Ошибка получения данных: " + E.description);
         return -1;
     }      
+    xmlhttp.setRequestHeader("Cache-control", "no-cache");
     xmlhttp.setRequestHeader("Accept", "application/json");
     xmlhttp.setRequestHeader("Content-Type", "application/json");
     xmlhttp.setRequestHeader("Accept-Charset", "utf-8");

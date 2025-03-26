@@ -19,9 +19,10 @@
 
 function init()
 {
-    X_API_KEY = getParameter('config.ini', 1);
-    END_POINT = getParameter('config.ini', 2);
-    FRONTOL_DB_PATH = getParameter('config.ini', 3);
+    CONFIG_PATH = 'config.ini';
+    X_API_KEY = getParameter(CONFIG_PATH, 1);
+    END_POINT = getParameter(CONFIG_PATH, 2);
+    FRONTOL_DB_PATH = getParameter(CONFIG_PATH, 3);
 
     frontol.userValues.clear();
     updateTapInfo();

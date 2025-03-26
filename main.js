@@ -110,6 +110,8 @@ function fillUserValues(tapInfo)
         tapNumber = tap.TAP_NUMBER;
         tapName = tap.TAP_NAME;
         wareName = tap.POS_WARE_NAME;
+        if (wareName == null)
+            wareName = "<ПУСТО>";
         
         expireDate = tapInfo[i].ExpirationDateStr;
         volumeData = tapInfo[i].volumeData;

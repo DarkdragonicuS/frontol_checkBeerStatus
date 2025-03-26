@@ -135,7 +135,7 @@ function fillUserValues(tapInfo)
  */
 function getBeerTapInfo()
 {
-    db = "DRIVER=Firebird/InterBase(r) driver; DBNAME=localhost:" + FRONTOL_DB_PATH + ";UID=sysdba;PWD=masterkey;CHARSET=WIN1251;";        
+    db = "DRIVER=Firebird/InterBase(r) driver; DBNAME=" + FRONTOL_DB_PATH + ";UID=sysdba;PWD=masterkey;CHARSET=WIN1251;";        
     var conn = new ActiveXObject("ADODB.Connection");
     conn.Provider = "MSDASQL.1";
       

@@ -116,11 +116,13 @@ function fillUserValues(tapInfo)
 
         userValueNameTN = 'tapName_' + tapNumber;
         userValueNameWN = 'wareName_' + tapNumber;
+        userValueNameMark = 'tapMark_' + tapNumber;
         userValueNameED = 'tapED_' + tapNumber;
         userValueNameVolume = 'tapVol_' + tapNumber;
 
         frontol.userValues.set(userValueNameTN, tapName);
         frontol.userValues.set(userValueNameWN, tapNumber.toString() + " - " + wareName);
+        frontol.userValues.set(userValueNameMark, mark);
         frontol.userValues.set(userValueNameED, expireDate);
         frontol.userValues.set(userValueNameVolume, volumeData);
     }

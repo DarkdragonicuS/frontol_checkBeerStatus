@@ -30,7 +30,12 @@ function init()
 function updateTapInfo()
 {
     beerTapInfo = getBeerTapInfo();
-    updateIsmTapInfo(beerTapInfo);
+    result = updateIsmTapInfo(beerTapInfo);
+    if (result)
+        // Получена ошибка
+    {
+        return result;
+    }
     fillUserValues(beerTapInfo);
 }
 
@@ -55,6 +60,11 @@ function updateIsmTapInfo(tapInfo)
         } 
 
     marksInfo = getMarksStatus(marks);
+    if (typeof marksInfo == 'number')
+        // Ошибка получения данных
+    {
+        return marksInfo;
+    }
 
     for (var i = 0; i < tapInfo.length; i++)
     {
@@ -259,7 +269,12 @@ function getMarksStatus(KmList)
     body = {
          'codes': codes
     }
-    result = sendRequest('/api/v4/true-api/codes/check', 'POST', body);  
+    result = sendRequest('/api/v4/true-api/codes/check', 'POST', body); 
+    if (typeof result == 'number')
+        // Ошибка получения данных ИСМ
+    {
+        return result;
+    }
   
     resultObj = JSON.parse(result);
     if(resultObj.code == 0){
@@ -277,7 +292,7 @@ function sendRequest(path, method, body)
     }
     catch (E)
     {
-         frontol.actions.showError("Ошибка получения данных: " + E.description);
+        frontol.actions.showMessage("Ошибка получения данных с ЧЗ: " + E.description);
         return -1;
     }      
     xmlhttp.setRequestHeader("Cache-control", "no-cache");
@@ -292,7 +307,7 @@ function sendRequest(path, method, body)
     }
     catch (E)    
     {
-        frontol.actions.showError("Не удалось получить данные: " + E.description);
+        frontol.actions.showMessage("Не удалось получить данные с ЧЗ: " + E.description);
         return -999;
     }
 

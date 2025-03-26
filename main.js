@@ -47,7 +47,11 @@ function updateIsmTapInfo(tapInfo)
         {
             var tap = tapInfo[i];
             mark = tap.MARK; 
-            marks.push(mark);
+            // Поставлено на кран
+            if (mark != null)
+            {
+                marks.push(mark);
+            }
         } 
 
     marksInfo = getMarksStatus(marks);
@@ -55,17 +59,22 @@ function updateIsmTapInfo(tapInfo)
     for (var i = 0; i < tapInfo.length; i++)
     {
         mark = tapInfo[i].MARK;
-        markInfoIsm = findItemByKey(marksInfo, 'cis', mark);
-        tapInfo[i].IsmInfo = markInfoIsm;
+        
+        // Поставлено на кран
+        if (mark != null)
+        {
+            markInfoIsm = findItemByKey(marksInfo, 'cis', mark);
+            tapInfo[i].IsmInfo = markInfoIsm;
 
-        expireDate = getExpirationDate(markInfoIsm);
-        volumeData = getVolumeData(markInfoIsm);
-        tapInfo[i].ExpirationDate = expireDate;
-        tapInfo[i].ExpirationDateStr = dateToString(expireDate);
-        tapInfo[i].volumeData = volumeData;
-        tapInfo[i].volumeFull = markInfoIsm.innerUnitCount / 1000;
-        tapInfo[i].volumeSold = markInfoIsm.soldUnitCount / 1000;
-        tapInfo[i].volumeRemained  = markInfoIsm.innerUnitCount / 1000 - markInfoIsm.soldUnitCount / 1000;
+            expireDate = getExpirationDate(markInfoIsm);
+            volumeData = getVolumeData(markInfoIsm);
+            tapInfo[i].ExpirationDate = expireDate;
+            tapInfo[i].ExpirationDateStr = dateToString(expireDate);
+            tapInfo[i].volumeData = volumeData;
+            tapInfo[i].volumeFull = markInfoIsm.innerUnitCount / 1000;
+            tapInfo[i].volumeSold = markInfoIsm.soldUnitCount / 1000;
+            tapInfo[i].volumeRemained  = markInfoIsm.innerUnitCount / 1000 - markInfoIsm.soldUnitCount / 1000;
+        }
     }
 }
 
@@ -126,7 +135,6 @@ function getBeerTapInfo()
     SELECT BEER_TAP.CODE AS Tap_Number, BEER_TAP.NAME AS Tap_Name, \
        BEER_TAP.LABEL AS Mark, SPRT.NAME AS Pos_Ware_Name FROM BEER_TAP \
     LEFT JOIN SPRT ON BEER_TAP.WAREID = SPRT.ID \
-    WHERE BEER_TAP.LABEL IS NOT NULL \
     ORDER BY BEER_TAP.CODE";
     rs.Open(query, conn);
     beerTapInfo = [];
@@ -145,10 +153,6 @@ function getBeerTapInfo()
     conn.Close();
     
     return beerTapInfo;
-
-    //DEBUG
-    //jsonString = JSON.stringify(beerTapInfo, null, 2);
-    //frontol.actions.showMessage(jsonString); 
 }
 
 //KmInfo:
@@ -241,11 +245,6 @@ function getMarkStatus(KM)
     }
     result = sendRequest('/api/v4/true-api/codes/check', 'POST', body);  
     
-    //DUBUG
-    //print JSON string readable
-    //var jsonString = JSON.stringify(JSON.parse(result), null, 2);
-    //frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
-
     resultObj = JSON.parse(result);
     if(resultObj.code == 0){
         return resultObj.codes[0];
@@ -261,12 +260,7 @@ function getMarksStatus(KmList)
          'codes': codes
     }
     result = sendRequest('/api/v4/true-api/codes/check', 'POST', body);  
-    
-    //DUBUG
-    //print JSON string readable
-    //var jsonString = JSON.stringify(JSON.parse(result), null, 2);
-    //frontol.actions.showMessage(jsonString.replace(/\n/g, '\r\n'));    
-
+  
     resultObj = JSON.parse(result);
     if(resultObj.code == 0){
         return resultObj.codes;
@@ -279,9 +273,7 @@ function sendRequest(path, method, body)
   xmlhttp.setOption(2, 13056); // для обхода ошибки самоподписного сертификата
   try
     {
-     //   frontol.actions.showMessage("DEBUG");
         xmlhttp.open(method, END_POINT + path, false);
-
     }
     catch (E)
     {
@@ -296,7 +288,6 @@ function sendRequest(path, method, body)
 
     try
     {
-        //frontol.actions.showMessage(JSON.stringify(body));
         xmlhttp.send(JSON.stringify(body));
     }
     catch (E)    
@@ -305,15 +296,9 @@ function sendRequest(path, method, body)
         return -999;
     }
 
-    //DEBUG
-    //frontol.actions.showMessage(xmlhttp.responseText);
-
     return xmlhttp.responseText;
 }
 
-//getBeerTapMark: str -> str
-//  Возвращает КМ, привязанной к крану с кодом tapCode.
-//  Если отсутствует кран с указанным кодом, возвращает -1.
 function getBeerTapMark(tapCode)
 {
     db = "DRIVER=Firebird/InterBase(r) driver; DBNAME=localhost:" + FRONTOL_DB_PATH + ";UID=sysdba;PWD=masterkey;CHARSET=WIN1251;";        

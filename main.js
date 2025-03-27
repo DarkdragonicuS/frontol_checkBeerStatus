@@ -73,15 +73,21 @@ function updateIsmTapInfo(tapInfo)
         {
             markInfoIsm = findItemByKey(marksInfo, 'cis', mark);
             tapInfo[i].IsmInfo = markInfoIsm;
+            volume = markInfoIsm.innerUnitCount;
+            sold = 0;
+            if (markInfoIsm.hasOwnProperty('soldUnitCount'))
+            {
+                sold = markInfoIsm.soldUnitCount;
+            }
 
             expireDate = getExpirationDate(markInfoIsm);
             volumeData = getVolumeData(markInfoIsm);
             tapInfo[i].ExpirationDate = expireDate;
             tapInfo[i].ExpirationDateStr = dateToString(expireDate);
             tapInfo[i].volumeData = volumeData;
-            tapInfo[i].volumeFull = markInfoIsm.innerUnitCount / 1000;
-            tapInfo[i].volumeSold = markInfoIsm.soldUnitCount / 1000;
-            tapInfo[i].volumeRemained  = markInfoIsm.innerUnitCount / 1000 - markInfoIsm.soldUnitCount / 1000;
+            tapInfo[i].volumeFull = volume / 1000;
+            tapInfo[i].volumeSold = sold / 1000;
+            tapInfo[i].volumeRemained = volume / 1000 - sold / 1000;
         }
     }
 }

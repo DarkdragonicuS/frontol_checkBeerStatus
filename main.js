@@ -212,8 +212,13 @@ function getExpirationDate(KmInfo)
 
 function getVolumeData(KmInfo)
 {
+    sold = 0;
+    if (KmInfo.hasOwnProperty('soldUnitCount'))
+    {
+        sold = KmInfo.soldUnitCount;
+    }
     volumeFull = KmInfo.innerUnitCount / 1000;
-    volumeSold = KmInfo.soldUnitCount / 1000;
+    volumeSold = sold / 1000;
     volumeRemained = volumeFull - volumeSold;
     volumeData = volumeRemained.toFixed(1) + " / " + volumeFull.toFixed(1);
 
